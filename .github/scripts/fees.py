@@ -17,7 +17,9 @@ from datetime import date, datetime, timedelta, timezone
 
 KST = timezone(timedelta(hours=9))
 FEE = 5000
+# 스터디 기간: 이 범위 밖의 날짜는 검사하지 않는다 (양 끝 포함)
 START_DATE = date(2026, 10, 1)
+END_DATE = date(2026, 12, 31)
 README = "README.md"
 WEEKDAYS = "월화수목금토일"
 COMMIT_TAG = "회비 반영 ({})"
@@ -92,8 +94,13 @@ def main() -> None:
     target = resolve_target_date()
     label = f"{target.isoformat()} ({WEEKDAYS[target.weekday()]})"
 
-    if target < START_DATE or target.weekday() >= 5:
-        print(f"{label}: 스터디 시작 전이거나 주말이라 건너뜁니다.")
+    if not START_DATE <= target <= END_DATE:
+        print(f"{label}: 스터디 기간({START_DATE} ~ {END_DATE})이 아니라 건너뜁니다.")
+        write_output(fined="false")
+        return
+
+    if target.weekday() >= 5:
+        print(f"{label}: 주말이라 건너뜁니다.")
         write_output(fined="false")
         return
 
