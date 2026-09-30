@@ -1,0 +1,69 @@
+name: Fees
+
+on:
+  schedule:
+    # 매주 월~금 15:00 UTC = 화~토 00:00 KST → 전날(월~금) 제출 여부 확인
+    - cron: "0 15 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "검사할 날짜 (YYYY-MM-DD, 비우면 KST 기준 어제)"
+        required: false
+      dry_run:
+        description: "README 커밋/이슈 생성 없이 결과만 확인"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: fees
+  cancel-in-progress: false
+
+jobs:
+  fees:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Check submissions
+        id: check
+        env:
+          TARGET_DATE: ${{ inputs.date }}
+          ISSUE_BODY_PATH: ${{ runner.temp }}/fee_issue.md
+        run: python3 .github/scripts/fees.py
+
+      - name: Show result (dry run)
+        if: steps.check.outputs.fined == 'true' && inputs.dry_run
+        run: |
+          cat "${{ runner.temp }}/fee_issue.md" >> "$GITHUB_STEP_SUMMARY"
+          git diff
+
+      - name: Commit README
+        if: steps.check.outputs.fined == 'true' && !inputs.dry_run
+        env:
+          COMMIT_MESSAGE: ${{ steps.check.outputs.commit_message }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "$COMMIT_MESSAGE"
+          for attempt in 1 2 3; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            sleep 5
+          done
+          exit 1
+
+      - name: Create issue
+        if: steps.check.outputs.fined == 'true' && !inputs.dry_run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_TITLE: ${{ steps.check.outputs.issue_title }}
+        run: |
+          gh label create "회비" --color FBCA04 --description "미제출 회비 기록" 2>/dev/null || true
+          gh issue create --title "$ISSUE_TITLE" --body-file "${{ runner.temp }}/fee_issue.md" --label "회비"
