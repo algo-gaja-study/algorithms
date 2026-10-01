@@ -61,7 +61,7 @@ algorithm/
 | 이름   | GitHub                                     |
 | ------ |--------------------------------------------|
 | 김지호 | [@jihostudy](https://github.com/jihostudy) |
-| 강슬빈 | [@xeulbn]()                                |
+| 강슬빈 | [@xeulbn](https://github.com/xeulbn)                                |
 
 ## 회식비 제공 천사 🪽
 
