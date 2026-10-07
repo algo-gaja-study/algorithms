@@ -3,6 +3,7 @@
 
 제출 판정: 전날 23:59:59(KST) 시점의 main 스냅샷에
   `{GitHub 아이디 또는 이름}/**/YYMMDD.*` 파일이 존재하면 제출로 본다.
+  주말과 공휴일(대체공휴일 포함)은 검사하지 않는다.
 
 환경 변수
   TARGET_DATE   검사할 날짜(YYYY-MM-DD). 비우면 KST 기준 어제.
@@ -20,6 +21,13 @@ FEE = 5000
 # 스터디 기간: 이 범위 밖의 날짜는 검사하지 않는다 (양 끝 포함)
 START_DATE = date(2026, 10, 1)
 END_DATE = date(2026, 12, 31)
+# 검사하지 않는 법정 공휴일·대체공휴일. 스터디 기간을 연장하면 여기에 추가한다.
+HOLIDAYS = {
+    date(2026, 10, 3): "개천절",
+    date(2026, 10, 5): "개천절 대체공휴일",  # 개천절이 토요일이라 월요일로 대체
+    date(2026, 10, 9): "한글날",
+    date(2026, 12, 25): "성탄절",
+}
 README = "README.md"
 WEEKDAYS = "월화수목금토일"
 COMMIT_TAG = "회비 반영 ({})"
@@ -34,6 +42,13 @@ def resolve_target_date() -> date:
     if raw:
         return date.fromisoformat(raw)
     return (datetime.now(KST) - timedelta(days=1)).date()
+
+
+def closed_reason(target: date) -> str | None:
+    """검사하지 않는 날이면 그 이유를, 평일이면 None을 반환한다."""
+    if target.weekday() >= 5:
+        return "주말"
+    return HOLIDAYS.get(target)
 
 
 def section(text: str, heading: str) -> str:
@@ -99,8 +114,8 @@ def main() -> None:
         write_output(fined="false")
         return
 
-    if target.weekday() >= 5:
-        print(f"{label}: 주말이라 건너뜁니다.")
+    if reason := closed_reason(target):
+        print(f"{label}: {reason}이라 건너뜁니다.")
         write_output(fined="false")
         return
 
