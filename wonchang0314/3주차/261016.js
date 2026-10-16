@@ -6,7 +6,7 @@ function solution(participant, completion) {
     const m = new Map();
     
     participant.forEach(p => {
-        if (m.set(p, (m.get(p) || 0) + 1)); 
+        m.set(p, (m.get(p) || 0) + 1);
     })
     
     completion.forEach(c => {
