@@ -61,12 +61,12 @@ algorithm/
 | 이름   | GitHub                                     |
 | ------ | ------------------------------------------ |
 | 강슬빈 | [@xeulbn](https://github.com/xeulbn)       |
-| 장원석 | [@Wonchang0314](https://github.com/Wonchang0314) |
 
 ## 함께했던 사람들
 | 이름   | GitHub                                     |
 | ------ | ------------------------------------------ |
 | 김지호 | [@jihostudy](https://github.com/jihostudy) |
+| 장원석 | [@Wonchang0314](https://github.com/Wonchang0314) |
 
 ## 회식비 제공 천사 🪽
 
